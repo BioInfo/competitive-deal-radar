@@ -1,0 +1,92 @@
+[
+  {
+    "id": "company-001",
+    "name": "AstraZeneca",
+    "logo": "AZ",
+    "hq": "Cambridge, UK",
+    "focus": ["Oncology", "Respiratory", "Cardiovascular"],
+    "description": "AstraZeneca is a global, science-led biopharmaceutical company that focuses on the discovery, development, and commercialization of prescription medicines in Oncology, Rare Diseases, and BioPharmaceuticals.",
+    "website": "https://www.astrazeneca.com"
+  },
+  {
+    "id": "company-002",
+    "name": "Genentech",
+    "logo": "GN",
+    "hq": "South San Francisco, CA, USA",
+    "focus": ["Oncology", "Immunology", "Neuroscience"],
+    "description": "Genentech, a member of the Roche Group, is a leading biotechnology company focused on discovering, developing, and delivering medicines for patients with serious and life-threatening conditions.",
+    "website": "https://www.gene.com"
+  },
+  {
+    "id": "company-003",
+    "name": "Merck",
+    "logo": "MK",
+    "hq": "Kenilworth, NJ, USA",
+    "focus": ["Oncology", "Vaccines", "Infectious Diseases"],
+    "description": "Merck & Co., known as MSD outside of the United States and Canada, is a global healthcare company that delivers innovative health solutions through its prescription medicines, vaccines, biologic therapies, and animal health products.",
+    "website": "https://www.merck.com"
+  },
+  {
+    "id": "company-004",
+    "name": "BMS",
+    "logo": "BMS",
+    "hq": "New York, NY, USA",
+    "focus": ["Oncology", "Hematology", "Immunology"],
+    "description": "Bristol Myers Squibb is a global biopharmaceutical company focused on discovering, developing, and delivering innovative medicines for patients with serious diseases in areas including oncology, hematology, immunology, and cardiovascular.",
+    "website": "https://www.bms.com"
+  },
+  {
+    "id": "company-005",
+    "name": "Novartis",
+    "logo": "NVS",
+    "hq": "Basel, Switzerland",
+    "focus": ["Oncology", "Neuroscience", "Immunology"],
+    "description": "Novartis is a global healthcare company based in Switzerland that provides solutions to address the evolving needs of patients worldwide through innovative medicines, data science and advanced therapy platforms.",
+    "website": "https://www.novartis.com"
+  },
+  {
+    "id": "company-006",
+    "name": "Pfizer",
+    "logo": "PFE",
+    "hq": "New York, NY, USA",
+    "focus": ["Oncology", "Rare Disease", "Vaccines"],
+    "description": "Pfizer Inc. is an American multinational pharmaceutical and biotechnology corporation that develops and produces medicines and vaccines for a wide range of medical disciplines.",
+    "website": "https://www.pfizer.com"
+  },
+  {
+    "id": "company-007",
+    "name": "Gilead",
+    "logo": "GILD",
+    "hq": "Foster City, CA, USA",
+    "focus": ["Virology", "Oncology", "Inflammation"],
+    "description": "Gilead Sciences, Inc. is an American biopharmaceutical company that researches, develops and commercializes drugs, with a primary focus on antiviral medications for the treatment of HIV, hepatitis B, hepatitis C, and influenza.",
+    "website": "https://www.gilead.com"
+  },
+  {
+    "id": "company-008",
+    "name": "Amgen",
+    "logo": "AMGN",
+    "hq": "Thousand Oaks, CA, USA",
+    "focus": ["Oncology", "Cardiovascular", "Bone Health"],
+    "description": "Amgen Inc. is an American multinational biopharmaceutical company that discovers, develops, manufactures and delivers human therapeutics worldwide through a focus on biotechnology innovations.",
+    "website": "https://www.amgen.com"
+  },
+  {
+    "id": "company-009",
+    "name": "Roche",
+    "logo": "ROG",
+    "hq": "Basel, Switzerland",
+    "focus": ["Oncology", "Immunology", "Neuroscience"],
+    "description": "Roche is a Swiss multinational healthcare company that operates worldwide under two divisions: Pharmaceuticals and Diagnostics. Its holding company, Roche Holding AG, has bearer shares listed on the SIX Swiss Exchange.",
+    "website": "https://www.roche.com"
+  },
+  {
+    "id": "company-010",
+    "name": "J&J",
+    "logo": "JNJ",
+    "hq": "New Brunswick, NJ, USA",
+    "focus": ["Immunology", "Oncology", "Neuroscience"],
+    "description": "Johnson & Johnson is an American multinational corporation that develops medical devices, pharmaceuticals, and consumer packaged goods. Its pharmaceutical division, Janssen, focuses on developing innovative treatments.",
+    "website": "https://www.jnj.com"
+  }
+]

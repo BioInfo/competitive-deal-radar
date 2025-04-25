@@ -1,0 +1,58 @@
+[
+  {
+    "id": "modality-001",
+    "name": "ADC",
+    "fullName": "Antibody-Drug Conjugate",
+    "category": "Biologics",
+    "description": "Therapeutic agent that combines a monoclonal antibody with a cytotoxic drug via a chemical linker, allowing targeted delivery of the cytotoxic drug to cancer cells."
+  },
+  {
+    "id": "modality-002",
+    "name": "mAb",
+    "fullName": "Monoclonal Antibody",
+    "category": "Biologics",
+    "description": "Laboratory-made proteins that mimic the immune system's ability to fight off harmful pathogens such as bacteria and viruses."
+  },
+  {
+    "id": "modality-003",
+    "name": "Cell Therapy",
+    "fullName": "Cell Therapy",
+    "category": "Advanced Therapy",
+    "description": "Treatment that uses whole cells or cell-derived products to cure or alleviate disease, including CAR-T, TCR, and other engineered cell therapies."
+  },
+  {
+    "id": "modality-004",
+    "name": "Small Molecule",
+    "fullName": "Small Molecule",
+    "category": "Chemical",
+    "description": "Low molecular weight organic compounds that can regulate biological processes with potential therapeutic benefits."
+  },
+  {
+    "id": "modality-005",
+    "name": "mRNA",
+    "fullName": "Messenger RNA",
+    "category": "Genetic Medicine",
+    "description": "Genetic material that contains instructions for cells to make specific proteins that can fight or prevent disease."
+  },
+  {
+    "id": "modality-006",
+    "name": "Peptide",
+    "fullName": "Peptide-based Therapeutics",
+    "category": "Biologics",
+    "description": "Short chains of amino acids that can function as drugs, often targeting specific molecular pathways or receptors."
+  },
+  {
+    "id": "modality-007",
+    "name": "Gene Therapy",
+    "fullName": "Gene Therapy",
+    "category": "Genetic Medicine",
+    "description": "A technique that uses genes to treat or prevent disease by replacing a mutated gene, introducing a new gene, or deactivating a problematic gene."
+  },
+  {
+    "id": "modality-008",
+    "name": "RNAi",
+    "fullName": "RNA Interference",
+    "category": "Genetic Medicine",
+    "description": "Biological process in which RNA molecules inhibit gene expression or translation by neutralizing targeted mRNA molecules."
+  }
+]

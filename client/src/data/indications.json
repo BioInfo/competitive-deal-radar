@@ -1,0 +1,86 @@
+[
+  {
+    "id": "indication-001",
+    "name": "NSCLC",
+    "fullName": "Non-Small Cell Lung Cancer",
+    "category": "Solid Tumor",
+    "prevalence": 1.8
+  },
+  {
+    "id": "indication-002",
+    "name": "TNBC",
+    "fullName": "Triple-Negative Breast Cancer",
+    "category": "Solid Tumor",
+    "prevalence": 0.12
+  },
+  {
+    "id": "indication-003",
+    "name": "MM",
+    "fullName": "Multiple Myeloma",
+    "category": "Hematological",
+    "prevalence": 0.07
+  },
+  {
+    "id": "indication-004",
+    "name": "DLBCL",
+    "fullName": "Diffuse Large B-Cell Lymphoma",
+    "category": "Hematological",
+    "prevalence": 0.04
+  },
+  {
+    "id": "indication-005",
+    "name": "AML",
+    "fullName": "Acute Myeloid Leukemia",
+    "category": "Hematological",
+    "prevalence": 0.02
+  },
+  {
+    "id": "indication-006",
+    "name": "CRC",
+    "fullName": "Colorectal Cancer",
+    "category": "Solid Tumor",
+    "prevalence": 1.2
+  },
+  {
+    "id": "indication-007",
+    "name": "Ovarian",
+    "fullName": "Ovarian Cancer",
+    "category": "Solid Tumor",
+    "prevalence": 0.22
+  },
+  {
+    "id": "indication-008",
+    "name": "HCC",
+    "fullName": "Hepatocellular Carcinoma",
+    "category": "Solid Tumor",
+    "prevalence": 0.4
+  },
+  {
+    "id": "indication-009",
+    "name": "SCLC",
+    "fullName": "Small Cell Lung Cancer",
+    "category": "Solid Tumor",
+    "prevalence": 0.24
+  },
+  {
+    "id": "indication-010",
+    "name": "GBM",
+    "fullName": "Glioblastoma Multiforme",
+    "category": "Solid Tumor",
+    "prevalence": 0.03
+  },
+  {
+    "id": "indication-011",
+    "name": "Melanoma",
+    "fullName": "Melanoma",
+    "category": "Solid Tumor",
+    "prevalence": 0.22
+  },
+  {
+    "id": "indication-012",
+    "name": "Pancreatic",
+    "fullName": "Pancreatic Cancer",
+    "category": "Solid Tumor",
+    "prevalence": 0.42
+  }
+]
