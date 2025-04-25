@@ -1,7 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +19,9 @@ import {
   SlidersHorizontal, 
   XIcon, 
   SearchIcon,
-  ZoomInIcon
+  ZoomInIcon,
+  TrendingUpIcon,
+  FileTextIcon
 } from 'lucide-react';
 
 interface HeatmapProps {
@@ -250,7 +251,7 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .attr('stroke', '#eaeaea')
         .attr('stroke-width', 1);
         
-      // Add X axis labels (modalities) - with improved positioning
+      // Add X axis labels (modalities) with rotation for better readability
       svg.append('g')
         .attr('class', 'x-axis')
         .selectAll('text')
@@ -258,9 +259,10 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .enter()
         .append('text')
         .attr('x', d => (xScale(d) || 0) + xScale.bandwidth() / 2)
-        .attr('y', -15) // Move labels up slightly
-        .attr('text-anchor', 'middle') // Center text horizontally
-        .style('font-size', '12px')
+        .attr('y', -8)
+        .attr('transform', d => `rotate(-30, ${(xScale(d) || 0) + xScale.bandwidth() / 2}, -8)`)
+        .attr('text-anchor', 'end')
+        .style('font-size', '11px')
         .style('font-weight', 'medium')
         .style('fill', d => highlightedModalities.includes(d) ? '#A92269' : '#52606D')
         .style('cursor', 'pointer')
@@ -306,9 +308,84 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .style('fill', '#333')
         .text('Indication');
       
-      // Create heatmap cells
+      // First create all empty cells for the grid (areas where deals could potentially occur)
+      const allPossibleCells: {indication: string, modality: string, count: number}[] = [];
+      
+      filteredIndications.forEach(indication => {
+        filteredModalities.forEach(modality => {
+          // Check if this cell exists in the actual data
+          const existingCell = filteredData.find(d => 
+            d.indication === indication && d.modality === modality
+          );
+          
+          if (existingCell) {
+            // Use the existing data
+            allPossibleCells.push(existingCell);
+          } else {
+            // Create an empty cell
+            allPossibleCells.push({
+              indication,
+              modality,
+              count: 0
+            });
+          }
+        });
+      });
+      
+      // Create background empty cells with dashed pattern
+      const emptyCell = svg.selectAll('rect.empty-cell')
+        .data(allPossibleCells.filter(d => d.count === 0))
+        .enter()
+        .append('rect')
+        .attr('class', 'empty-cell')
+        .attr('x', d => xScale(d.modality) || 0)
+        .attr('y', d => yScale(d.indication) || 0)
+        .attr('width', xScale.bandwidth())
+        .attr('height', yScale.bandwidth())
+        .attr('rx', 4)
+        .attr('ry', 4)
+        .attr('fill', '#fbfbfb')
+        .attr('stroke', '#eaeaea')
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '2,2')
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .attr('fill', '#f5f5f5')
+            .attr('stroke', '#d0d0d0')
+            .attr('stroke-width', 2);
+          
+          // Show tooltip for potential opportunity
+          const tooltip = d3.select(tooltipRef.current);
+          tooltip.style('opacity', 1)
+            .html(`
+              <div class="p-2 bg-white shadow-lg rounded-lg border">
+                <div class="text-sm font-semibold mb-1">${d.indication} × ${d.modality}</div>
+                <div class="text-xs text-neutral-600">
+                  No deals recorded in this combination
+                </div>
+                <div class="mt-1 text-xs text-primary">Potential opportunity area</div>
+              </div>
+            `)
+            .style('left', `${event.pageX + 10}px`)
+            .style('top', `${event.pageY - 20}px`);
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .attr('fill', '#fbfbfb')
+            .attr('stroke', '#eaeaea')
+            .attr('stroke-width', 1);
+          
+          const tooltip = d3.select(tooltipRef.current);
+          tooltip.style('opacity', 0);
+        })
+        .on('click', function(_, d) {
+          onCellClick(d.indication, d.modality);
+        });
+        
+      // Create filled cells for actual data
       const cells = svg.selectAll('rect.heatmap-cell')
-        .data(filteredData)
+        .data(allPossibleCells.filter(d => d.count > 0))
         .enter()
         .append('rect')
         .attr('class', 'heatmap-cell')
@@ -319,7 +396,6 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .attr('rx', 4)
         .attr('ry', 4)
         .attr('fill', d => {
-          if (d.count === 0) return '#f5f5f5';
           const value = normalized ? d.count / maxValue : d.count;
           return colorScale(value);
         })
@@ -359,6 +435,85 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
           })
           .text(d => d.count);
       }
+      
+      // Add color legend on the right side
+      const legendWidth = 20;
+      const legendHeight = cellSize * filteredIndications.length;
+      const legendX = cellSize * filteredModalities.length + 50;
+      
+      // Create gradient definition
+      const defs = svg.append('defs');
+      const gradient = defs.append('linearGradient')
+        .attr('id', 'color-gradient')
+        .attr('x1', '0%')
+        .attr('x2', '0%')
+        .attr('y1', '0%')
+        .attr('y2', '100%');
+        
+      // Add gradient stops
+      gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', colorScale(normalized ? 1 : maxValue));
+      
+      gradient.append('stop')
+        .attr('offset', '50%')
+        .attr('stop-color', colorScale(normalized ? 0.5 : maxValue/2));
+        
+      gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', colorScale(normalized ? 0 : 0));
+        
+      // Create legend rect filled with gradient
+      svg.append('rect')
+        .attr('x', legendX)
+        .attr('y', 0)
+        .attr('width', legendWidth)
+        .attr('height', legendHeight)
+        .attr('fill', 'url(#color-gradient)')
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('stroke', '#eaeaea')
+        .attr('stroke-width', 1);
+        
+      // Add legend title
+      svg.append('text')
+        .attr('x', legendX + legendWidth / 2)
+        .attr('y', -15)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .style('font-weight', 'medium')
+        .style('fill', '#52606D')
+        .text('Deal Count');
+        
+      // Add max value at top
+      svg.append('text')
+        .attr('x', legendX + legendWidth + 5)
+        .attr('y', 10)
+        .attr('text-anchor', 'start')
+        .attr('dominant-baseline', 'middle')
+        .style('font-size', '10px')
+        .style('fill', '#52606D')
+        .text(maxValue.toString());
+        
+      // Add mid value
+      svg.append('text')
+        .attr('x', legendX + legendWidth + 5)
+        .attr('y', legendHeight / 2)
+        .attr('text-anchor', 'start')
+        .attr('dominant-baseline', 'middle')
+        .style('font-size', '10px')
+        .style('fill', '#52606D')
+        .text(Math.floor(maxValue / 2).toString());
+        
+      // Add min value at bottom
+      svg.append('text')
+        .attr('x', legendX + legendWidth + 5)
+        .attr('y', legendHeight - 5)
+        .attr('text-anchor', 'start')
+        .attr('dominant-baseline', 'middle')
+        .style('font-size', '10px')
+        .style('fill', '#52606D')
+        .text('0');
       
       // Add interactivity with tooltip and click
       cells
