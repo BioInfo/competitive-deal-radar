@@ -9,7 +9,7 @@
 
 A visually intuitive radar for tracking competitive deals across oncology indications. Designed for strategy, business development, and competitive intelligence teams.
 
-![Dashboard Preview](https://via.placeholder.com/800x450?text=Competitive+Deal+Radar+Dashboard)
+![Competitive Deal Radar Logo](https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-d3f8-61f7-b530-948380b5526b/raw?se=2025-04-25T23%3A35%3A41Z&sp=r&sv=2024-08-04&sr=b&scid=ab656593-627a-555e-92b1-d664e7193e7b&skoid=cbbaa726-4a2e-4147-932c-56e6e553f073&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-25T17%3A34%3A53Z&ske=2025-04-26T17%3A34%3A53Z&sks=b&skv=2024-08-04&sig=wb5TU08Nf5nNSZNa0Papt4IQYp7ldecUieXeD/AgKlw%3D)
 
 ## 🚀 Features
 
@@ -133,5 +133,5 @@ Project Owner: Justin Johnson - Executive Director, Oncology Data Science
 ---
 
 <p align="center">
-  <img src="https://via.placeholder.com/100x100?text=CDR" alt="Competitive Deal Radar Logo" width="100">
+  <img src="https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-d3f8-61f7-b530-948380b5526b/raw?se=2025-04-25T23%3A35%3A41Z&sp=r&sv=2024-08-04&sr=b&scid=ab656593-627a-555e-92b1-d664e7193e7b&skoid=cbbaa726-4a2e-4147-932c-56e6e553f073&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-25T17%3A34%3A53Z&ske=2025-04-26T17%3A34%3A53Z&sks=b&skv=2024-08-04&sig=wb5TU08Nf5nNSZNa0Papt4IQYp7ldecUieXeD/AgKlw%3D" alt="Competitive Deal Radar Logo" width="200">
 </p>
