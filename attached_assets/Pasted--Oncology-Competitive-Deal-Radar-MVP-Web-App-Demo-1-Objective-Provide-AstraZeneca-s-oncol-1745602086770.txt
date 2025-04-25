@@ -1,0 +1,176 @@
+# Oncology Competitive‑Deal Radar – MVP Web App (Demo)
+
+## 1. Objective
+
+Provide AstraZeneca’s oncology Strategy, BD, and Competitive‑Intelligence teams with a quick, visually intuitive radar of recent competitive deals across all oncology indications. For the MVP we will ship a static, client‑side demo that proves the layout and interaction concepts without external data integration.
+
+## 2. Scope for MVP
+
+|Area|In Scope|Out of Scope|
+|---|---|---|
+|**Data**|Local JSON seed files bundled at build|Live APIs, databases|
+|**Auth**|None|SSO / role‑based access|
+|**Performance**|Default Next.js behavior|Perf tuning, analytics|
+|**Hosting**|Static export on Vercel / GitHub Pages|Internal AZ infra deployment|
+
+## 3. Target Users
+
+- Oncology Strategy & Portfolio leads
+    
+- Business Development & Alliance Management
+    
+- Competitive‑Intelligence analysts
+    
+
+## 4. Core Pages & Components
+
+### 4.1 Dashboard Home
+
+- Header bar (logo, nav)
+    
+- KPI cards: **#Deals YTD**, **Top Modalities**, **Hot Indications**
+    
+- Timeline area chart – monthly deal count YTD
+    
+- Recent Deals table (sortable)
+    
+
+### 4.2 Deal Explorer
+
+- Faceted sidebar filters (Indication, Modality, Stage, Value)
+    
+- Results data‑grid (virtualised)
+    
+- Deal Detail drawer / modal on row click
+    
+
+### 4.3 Company Profiles
+
+- Global search / autocomplete
+    
+- Company card (logo, HQ, focus areas)
+    
+- Recent deals list
+    
+- Pipeline snapshot (static image placeholder)
+    
+
+### 4.4 Indication Heatmap
+
+- Grid heatmap (Indication × Modality) – cell intensity ≈ deal count
+    
+- Click cell → filtered list view (re‑use Deal Explorer)
+    
+
+### 4.5 About / Methodology
+
+- Static markdown: data sources, currency assumptions, glossary
+    
+
+## 5. Static Data Model
+
+```json
+// deals.json
+{
+  "id": "D‑2025‑0007",
+  "date": "2025‑03‑15",
+  "companyA": "AstraZeneca",
+  "companyB": "Genentech",
+  "asset": "Anti‑TROP2 ADC",
+  "modality": "ADC",
+  "indication": "TNBC",
+  "stage": "Phase 2",
+  "upfront": 250,
+  "milestones": 750,
+  "total": 1000
+}
+```
+
+Other seed files: `companies.json`, `indications.json`, `modalities.json`.
+
+## 6. Interaction Flow
+
+1. User lands on **Dashboard Home** → scans headline KPIs.
+    
+2. Clicks "View All Deals" → **Deal Explorer** pre‑filtered by current year.
+    
+3. Applies filters; selects a row to inspect **Deal Detail**.
+    
+4. From company link inside detail, jumps to **Company Profile**.
+    
+5. Returns to **Indication Heatmap** to spot white‑space opportunities.
+    
+
+## 7. UX / UI Guidelines
+
+- **Design language:** Clean card layout, TailwindCSS, AstraZeneca magenta accents.
+    
+- **Charts:** D3 (area chart, heatmap).
+    
+- **Responsive:** Two‑column ≥ 1280 px, single‑column mobile.
+    
+
+## 8. Tech Stack
+
+- **Next.js 14** (app router)
+    
+- **TailwindCSS** for styling
+    
+- **D3** for charts
+    
+- Static JSON in `/data` folder
+    
+
+## 9. Repository Skeleton
+
+```
+/oncology‑deal‑radar
+  ├─ app/
+  │   ├─ layout.tsx
+  │   ├─ page.tsx               # Dashboard
+  │   ├─ deal/
+  │   │   └─ page.tsx           # Deal Explorer
+  │   ├─ company/[slug]/page.tsx
+  │   ├─ heatmap/page.tsx
+  │   └─ about/page.tsx
+  ├─ components/
+  │   ├─ KpiCard.tsx
+  │   ├─ DealTable.tsx
+  │   ├─ Heatmap.tsx
+  │   └─ ...
+  ├─ data/
+  │   ├─ deals.json
+  │   ├─ companies.json
+  │   └─ ...
+  ├─ public/
+  ├─ tailwind.config.mjs
+  ├─ package.json
+  └─ README.md
+```
+
+## 10. Development Milestones
+
+|Week|Deliverable|
+|---|---|
+|1|Repo scaffold, Tailwind setup, seed JSON|
+|2|Dashboard page + KPI & chart stubs|
+|3|Deal Explorer with filtering & modal|
+|4|Company Profile & Indication Heatmap|
+|5|Polish UI, static export, deploy to Vercel|
+
+## 11. Future Enhancements (Post‑MVP)
+
+- API integration to real‑time deal database
+    
+- Auth & RBAC (Okta)
+    
+- ElasticSearch backend for complex querying
+    
+- Slack/Teams daily digest bot
+    
+- Deal valuation analytics module
+    
+
+---
+
+**Contact:** Justin Johnson (Executive Director, Oncology Data Science) – _Product Owner_
