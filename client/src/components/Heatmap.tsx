@@ -89,6 +89,34 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
     setZoomLevel(100);
   };
   
+  // Handle export of data
+  const handleExport = () => {
+    // Create exportable data
+    const exportData = filteredData.map(d => ({
+      indication: d.indication,
+      modality: d.modality,
+      count: d.count,
+      metric: metricType === 'value' ? 'Deal Value ($M)' : 
+              metricType === 'growth' ? 'YoY Growth (%)' : 'Deal Count'
+    }));
+    
+    // Convert to JSON
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create download link and trigger click
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `oncology_heatmap_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up URL object
+    URL.revokeObjectURL(url);
+  };
+  
   // Toggle highlight for an indication
   const toggleIndicationHighlight = (indication: string) => {
     setHighlightedIndications(prev => {
@@ -134,33 +162,7 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
     }
   };
   
-  // Handle exporting the visualization
-  const handleExport = () => {
-    if (!svgRef.current) return;
-    
-    // Create a copy of the SVG
-    const svgCopy = svgRef.current.cloneNode(true) as SVGSVGElement;
-    
-    // Set white background
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('width', '100%');
-    rect.setAttribute('height', '100%');
-    rect.setAttribute('fill', 'white');
-    svgCopy.insertBefore(rect, svgCopy.firstChild);
-    
-    // Convert to string
-    const svgData = new XMLSerializer().serializeToString(svgCopy);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-    
-    // Create download link
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `oncology_${viewMode}_${new Date().toISOString().split('T')[0]}.svg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  
   
   // Generate the visualization based on the current view mode
   useEffect(() => {
@@ -201,12 +203,12 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
     const xScale = d3.scaleBand()
       .domain(filteredModalities)
       .range([0, cellSize * filteredModalities.length])
-      .padding(0.1);
+      .padding(0.2); // Increased padding for better spacing
       
     const yScale = d3.scaleBand()
       .domain(filteredIndications)
       .range([0, cellSize * filteredIndications.length])
-      .padding(0.1);
+      .padding(0.2); // Increased padding for better spacing
     
     // Color scale using the selected scheme
     const colorScale = d3.scaleSequential()
@@ -215,7 +217,40 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
     
     // Draw the heatmap visualization
     if (viewMode === 'heatmap') {
-      // Add X axis labels (modalities)
+      // Create a background for the grid
+      svg.append('rect')
+        .attr('width', cellSize * filteredModalities.length)
+        .attr('height', cellSize * filteredIndications.length)
+        .attr('fill', '#f8f9fa')
+        .attr('rx', 6)
+        .attr('ry', 6);
+      
+      // Add grid lines for better readability
+      svg.selectAll('line.grid-x')
+        .data(d3.range(filteredModalities.length + 1))
+        .enter()
+        .append('line')
+        .attr('class', 'grid-x')
+        .attr('x1', d => d * cellSize)
+        .attr('y1', 0)
+        .attr('x2', d => d * cellSize)
+        .attr('y2', cellSize * filteredIndications.length)
+        .attr('stroke', '#eaeaea')
+        .attr('stroke-width', 1);
+      
+      svg.selectAll('line.grid-y')
+        .data(d3.range(filteredIndications.length + 1))
+        .enter()
+        .append('line')
+        .attr('class', 'grid-y')
+        .attr('x1', 0)
+        .attr('y1', d => d * cellSize)
+        .attr('x2', cellSize * filteredModalities.length)
+        .attr('y2', d => d * cellSize)
+        .attr('stroke', '#eaeaea')
+        .attr('stroke-width', 1);
+        
+      // Add X axis labels (modalities) - with improved positioning
       svg.append('g')
         .attr('class', 'x-axis')
         .selectAll('text')
@@ -223,10 +258,8 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .enter()
         .append('text')
         .attr('x', d => (xScale(d) || 0) + xScale.bandwidth() / 2)
-        .attr('y', -10)
-        .attr('text-anchor', 'start')
-        .attr('transform', d => `rotate(-45, ${(xScale(d) || 0) + xScale.bandwidth() / 2}, -10)`)
-        .attr('dominant-baseline', 'middle')
+        .attr('y', -15) // Move labels up slightly
+        .attr('text-anchor', 'middle') // Center text horizontally
         .style('font-size', '12px')
         .style('font-weight', 'medium')
         .style('fill', d => highlightedModalities.includes(d) ? '#A92269' : '#52606D')
@@ -234,14 +267,24 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .text(d => d)
         .on('click', (_, d) => toggleModalityHighlight(d));
       
-      // Add Y axis labels (indications)
+      // Add modality header
+      svg.append('text')
+        .attr('x', (cellSize * filteredModalities.length) / 2)
+        .attr('y', -40)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('font-weight', 'medium')
+        .style('fill', '#333')
+        .text('Modality');
+      
+      // Add Y axis labels (indications) - with improved positioning
       svg.append('g')
         .attr('class', 'y-axis')
         .selectAll('text')
         .data(filteredIndications)
         .enter()
         .append('text')
-        .attr('x', -10)
+        .attr('x', -15) // Move labels left slightly
         .attr('y', d => (yScale(d) || 0) + yScale.bandwidth() / 2)
         .attr('text-anchor', 'end')
         .attr('dominant-baseline', 'middle')
@@ -251,6 +294,17 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .style('cursor', 'pointer')
         .text(d => d)
         .on('click', (_, d) => toggleIndicationHighlight(d));
+        
+      // Add indication header
+      svg.append('text')
+        .attr('x', -80)
+        .attr('y', (cellSize * filteredIndications.length) / 2)
+        .attr('text-anchor', 'middle')
+        .attr('transform', `rotate(-90, -80, ${(cellSize * filteredIndications.length) / 2})`)
+        .style('font-size', '14px')
+        .style('font-weight', 'medium')
+        .style('fill', '#333')
+        .text('Indication');
       
       // Create heatmap cells
       const cells = svg.selectAll('rect.heatmap-cell')
@@ -904,60 +958,75 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
           
           {/* Filters area */}
           {showFilters && (
-            <div className="bg-neutral-50 p-4 rounded-lg space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="text-sm font-medium">Visualization Options</h4>
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  Reset All
+            <div className="bg-neutral-50 p-3 rounded-lg shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-semibold text-secondary">Visualization Controls</h4>
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2 text-xs">
+                  Reset Filters
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Search filter */}
-                <div className="space-y-2">
-                  <Label className="text-sm">Search</Label>
-                  <div className="relative">
-                    <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                    <Input
-                      placeholder="Search indications or modalities..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                    {searchTerm && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full"
-                        onClick={() => setSearchTerm('')}
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* View mode */}
+                <div>
+                  <Label className="text-xs mb-1 text-neutral-500">View Type</Label>
+                  <Select value={viewMode} onValueChange={(value: ViewMode) => setViewMode(value)}>
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue placeholder="View Mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="heatmap">
+                        <div className="flex items-center gap-2">
+                          <GridIcon className="h-4 w-4" />
+                          <span>Heatmap</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bubble">
+                        <div className="flex items-center gap-2">
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            <circle cx="16" cy="16" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          </svg>
+                          <span>Bubble</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="treemap">
+                        <div className="flex items-center gap-2">
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            <rect x="3" y="3" width="8" height="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            <rect x="13" y="3" width="8" height="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            <rect x="3" y="13" width="8" height="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+                          </svg>
+                          <span>Treemap</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
-                {/* Color scheme and visualization options */}
-                <div className="space-y-2">
-                  <Label className="text-sm">Color Scheme</Label>
+                {/* Color scheme */}
+                <div>
+                  <Label className="text-xs mb-1 text-neutral-500">Color Scheme</Label>
                   <Select value={colorScheme} onValueChange={(value: 'default' | 'viridis' | 'inferno' | 'warm') => setColorScheme(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select color scheme" />
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue placeholder="Select scheme" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="default">Primary (Default)</SelectItem>
                       <SelectItem value="viridis">Viridis (Green-Blue)</SelectItem>
                       <SelectItem value="inferno">Inferno (Yellow-Red)</SelectItem>
-                      <SelectItem value="warm">Warm (Yellow-Orange-Red)</SelectItem>
+                      <SelectItem value="warm">Warm (Yellow-Red-Orange)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 {/* Metric type */}
-                <div className="space-y-2">
-                  <Label className="text-sm">Metric</Label>
+                <div>
+                  <Label className="text-xs mb-1 text-neutral-500">Metric</Label>
                   <Select value={metricType} onValueChange={(value: MetricType) => setMetricType(value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select metric" />
                     </SelectTrigger>
                     <SelectContent>
@@ -968,85 +1037,112 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
                   </Select>
                 </div>
                 
-                {/* Display options */}
-                <div className="space-y-2">
-                  <Label className="text-sm">Display Options</Label>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Show Cell Values</span>
-                    <Switch
-                      checked={showLabels}
-                      onCheckedChange={setShowLabels}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Normalize Values</span>
-                    <Switch
-                      checked={normalized}
-                      onCheckedChange={setNormalized}
-                    />
-                  </div>
-                </div>
-                
-                {/* Grouping options (for treemap) */}
-                <div className="space-y-2">
-                  <Label className="text-sm">Grouping (Treemap)</Label>
-                  <Select value={groupBy} onValueChange={(value: GroupBy) => setGroupBy(value)}>
-                    <SelectTrigger>
+                {/* Grouping (only for treemap) */}
+                <div>
+                  <Label className="text-xs mb-1 text-neutral-500">Grouping (Treemap)</Label>
+                  <Select 
+                    value={groupBy} 
+                    onValueChange={(value: GroupBy) => setGroupBy(value)}
+                    disabled={viewMode !== 'treemap'}
+                  >
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Group by..." />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No Grouping</SelectItem>
-                      <SelectItem value="indication_category">By Indication Category</SelectItem>
-                      <SelectItem value="modality_category">By Modality Category</SelectItem>
+                      <SelectItem value="indication_category">By Indication</SelectItem>
+                      <SelectItem value="modality_category">By Modality</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                {/* Search filter */}
+                <div>
+                  <Label className="text-xs mb-1 text-neutral-500">Search</Label>
+                  <div className="relative">
+                    <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                    <Input
+                      placeholder="Filter by indication or modality..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8 h-8 text-sm"
+                    />
+                    {searchTerm && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full w-8"
+                        onClick={() => setSearchTerm('')}
+                      >
+                        <XIcon className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
                 
-                {/* Zoom control */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Zoom Level: {zoomLevel}%</Label>
-                    <Button variant="ghost" size="sm" onClick={handleResetZoom} className="h-6 px-2 text-xs">
-                      Reset
-                    </Button>
+                {/* Quick options */}
+                <div className="flex flex-wrap gap-x-6 gap-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="show-labels"
+                      checked={showLabels}
+                      onCheckedChange={setShowLabels}
+                      className="h-4 w-7 data-[state=checked]:bg-primary"
+                    />
+                    <Label htmlFor="show-labels" className="text-xs">Show Values</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <ZoomInIcon className="h-4 w-4 text-neutral-500" />
+                    <Switch
+                      id="normalize"
+                      checked={normalized}
+                      onCheckedChange={setNormalized}
+                      className="h-4 w-7 data-[state=checked]:bg-primary"
+                    />
+                    <Label htmlFor="normalize" className="text-xs">Normalize</Label>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs whitespace-nowrap">Zoom: {zoomLevel}%</Label>
                     <Slider
                       value={[zoomLevel]}
                       min={50}
                       max={200}
                       step={10}
                       onValueChange={(value) => setZoomLevel(value[0])}
+                      className="w-24 h-4"
                     />
+                    <Button variant="ghost" size="sm" onClick={handleResetZoom} className="h-6 w-6 p-0">
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 3h18v18H3z" />
+                      </svg>
+                    </Button>
                   </div>
                 </div>
               </div>
               
               {/* Active filters display */}
               {(highlightedIndications.length > 0 || highlightedModalities.length > 0) && (
-                <div className="pt-2 border-t">
-                  <Label className="text-sm mb-2 inline-block">Active Filters:</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {highlightedIndications.map((indication) => (
-                      <Badge key={indication} variant="outline" className="gap-1 bg-primary/5">
-                        Indication: {indication}
-                        <XIcon 
-                          className="h-3 w-3 cursor-pointer" 
-                          onClick={() => toggleIndicationHighlight(indication)} 
-                        />
-                      </Badge>
-                    ))}
-                    {highlightedModalities.map((modality) => (
-                      <Badge key={modality} variant="outline" className="gap-1 bg-secondary/5">
-                        Modality: {modality}
-                        <XIcon 
-                          className="h-3 w-3 cursor-pointer" 
-                          onClick={() => toggleModalityHighlight(modality)} 
-                        />
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-neutral-200">
+                  <div className="text-xs text-neutral-500 mr-1 pt-1">Active Filters:</div>
+                  {highlightedIndications.map((indication) => (
+                    <Badge key={indication} variant="outline" className="h-6 gap-1 bg-primary/5 rounded-full px-2 py-0 text-xs">
+                      {indication}
+                      <XIcon 
+                        className="h-3 w-3 cursor-pointer" 
+                        onClick={() => toggleIndicationHighlight(indication)} 
+                      />
+                    </Badge>
+                  ))}
+                  {highlightedModalities.map((modality) => (
+                    <Badge key={modality} variant="outline" className="h-6 gap-1 bg-secondary/5 rounded-full px-2 py-0 text-xs">
+                      {modality}
+                      <XIcon 
+                        className="h-3 w-3 cursor-pointer" 
+                        onClick={() => toggleModalityHighlight(modality)} 
+                      />
+                    </Badge>
+                  ))}
                 </div>
               )}
             </div>
@@ -1054,96 +1150,136 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
           
           {/* Main visualization */}
           <div className="relative w-full overflow-x-auto" ref={containerRef}>
-            <Tabs defaultValue="visualization" className="mb-4">
-              <TabsList className="w-full md:w-auto grid grid-cols-2 md:inline-flex h-9">
-                <TabsTrigger value="visualization" className="h-8 px-3 text-xs">
+            <div className="flex items-center border-b mb-3">
+              <div className="flex space-x-1">
+                <Button variant="ghost" size="sm" className="h-7 text-xs rounded-none border-b-2 border-primary">
                   Visualization
-                </TabsTrigger>
-                <TabsTrigger value="insights" className="h-8 px-3 text-xs">
-                  Insights & Analysis
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="visualization" className="mt-2">
-                <div className={`w-full overflow-x-auto pb-4 ${zoomLevel > 100 ? 'overflow-y-auto max-h-[600px]' : ''}`}>
-                  <svg 
-                    ref={svgRef} 
-                    className="w-full"
-                    style={{ 
-                      minWidth: viewMode === 'heatmap' ? 
-                        `${Math.max(800, filteredIndications.length * 40 + 200)}px` : 
-                        '800px'
-                    }}
-                  ></svg>
-                  <div 
-                    ref={tooltipRef} 
-                    className="tooltip z-50" 
-                    style={{ 
-                      opacity: 0, 
-                      position: 'absolute', 
-                      pointerEvents: 'none',
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                      borderRadius: '4px', 
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                    }}
-                  ></div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="insights" className="mt-2">
-                <div className="bg-neutral-50 p-4 rounded-lg">
-                  <h4 className="font-medium mb-3">Key Insights</h4>
-                  
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h5 className="text-sm font-medium mb-2">Hotspots</h5>
-                      <ul className="list-disc list-inside text-sm text-neutral-600 space-y-2">
-                        <li>
-                          <span className="font-medium">NSCLC × ADC:</span> Highest concentration of deals, 
-                          representing almost 15% of all oncology licensing activity
-                        </li>
-                        <li>
-                          <span className="font-medium">MM × Cell Therapy:</span> Continued strong interest,
-                          particularly in early-stage assets and novel mechanisms
-                        </li>
-                        <li>
-                          <span className="font-medium">Bi-specifics:</span> Growing trend across multiple 
-                          indications, especially in hematological malignancies
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h5 className="text-sm font-medium mb-2">Emerging Trends</h5>
-                      <ul className="list-disc list-inside text-sm text-neutral-600 space-y-2">
-                        <li>
-                          <span className="font-medium">RNA Therapeutics:</span> 200% YoY increase in
-                          solid tumor applications, but from a small base
-                        </li>
-                        <li>
-                          <span className="font-medium">Precision Radiotherapeutics:</span> Growing interest 
-                          in targeted alpha-emitters for GBM and metastatic cancers
-                        </li>
-                        <li>
-                          <span className="font-medium">White Space in GBM:</span> Limited deal activity 
-                          despite high unmet need, potential opportunity area
-                        </li>
-                      </ul>
-                    </div>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 text-xs rounded-none hover:text-primary"
+                  onClick={handleExport}
+                >
+                  <DownloadIcon className="h-3 w-3 mr-1" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            
+            <div className={`w-full overflow-x-auto pb-2 ${zoomLevel > 100 ? 'overflow-y-auto max-h-[600px]' : ''}`}>
+              <svg 
+                ref={svgRef} 
+                className="w-full"
+                style={{ 
+                  minWidth: viewMode === 'heatmap' ? 
+                    `${Math.max(800, filteredIndications.length * 40 + 200)}px` : 
+                    '800px'
+                }}
+              ></svg>
+              <div 
+                ref={tooltipRef} 
+                className="tooltip z-50" 
+                style={{ 
+                  opacity: 0, 
+                  position: 'absolute', 
+                  pointerEvents: 'none',
+                  backgroundColor: 'white', 
+                  borderRadius: '6px', 
+                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid #eaeaea'
+                }}
+              ></div>
+            </div>
+            
+            <div className="mt-4 grid md:grid-cols-3 gap-3">
+              <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center text-white text-[10px]">
+                    1
                   </div>
-                  
-                  <div className="mt-4">
-                    <h5 className="text-sm font-medium mb-2">Strategic Implications</h5>
-                    <p className="text-sm text-neutral-600">
-                      The concentration of deals in NSCLC and hematological malignancies suggests intense 
-                      competition in these areas. Strategic differentiation could focus on underserved indications 
-                      like pancreatic, CRC, and GBM, or novel modalities. Our analysis suggests companies are 
-                      prioritizing earlier-stage assets with novel mechanisms over late-stage programs.
-                    </p>
-                  </div>
+                  <h5 className="text-sm font-medium">Key Hotspots</h5>
                 </div>
-              </TabsContent>
-            </Tabs>
+                <ul className="list-none text-xs text-neutral-600 space-y-1.5">
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-primary mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">NSCLC × ADC:</span> 15% of all oncology deals, highest concentration
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-primary mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">MM × Cell Therapy:</span> Strong interest in novel mechanisms
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-primary mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">Bispecifics:</span> Growing trend across hematological malignancies
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-secondary flex items-center justify-center text-white text-[10px]">
+                    2
+                  </div>
+                  <h5 className="text-sm font-medium">Emerging Trends</h5>
+                </div>
+                <ul className="list-none text-xs text-neutral-600 space-y-1.5">
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-secondary mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">RNA Therapeutics:</span> 200% YoY increase in solid tumors
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-secondary mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">Radiopharmaceuticals:</span> Interest in targeted therapies
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-secondary mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">White Space in GBM:</span> Low activity despite high unmet need
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-accent flex items-center justify-center text-white text-[10px]">
+                    3
+                  </div>
+                  <h5 className="text-sm font-medium">Strategic Implications</h5>
+                </div>
+                <ul className="list-none text-xs text-neutral-600 space-y-1.5">
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-accent mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">High Competition:</span> NSCLC and hematological indications
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-accent mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">Differentiation:</span> Focus on underserved tumor types
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <div className="min-w-[6px] h-[6px] rounded-full bg-accent mt-1.5"></div>
+                    <div>
+                      <span className="font-medium">Early Stage:</span> Companies favoring novel mechanisms
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
           
           <p className="text-sm text-neutral-500">
