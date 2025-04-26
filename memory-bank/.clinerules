@@ -1,0 +1,120 @@
+# Competitive Deal Radar - Project Intelligence
+
+## Project Patterns
+
+### Naming Conventions
+- React components use PascalCase (e.g., `DealTable.tsx`, `KpiCard.tsx`)
+- Utility files use kebab-case (e.g., `use-mobile.tsx`)
+- Constants use UPPER_SNAKE_CASE
+- Variables and functions use camelCase
+- Types and interfaces use PascalCase with descriptive names
+
+### File Organization
+- Components are organized by feature/purpose in the `components` directory
+- Reusable UI components are in `components/ui`
+- Pages are in the `pages` directory
+- Hooks are in the `hooks` directory
+- Utilities and types are in the `lib` directory
+- Data files are in the `data` directory
+
+### Code Style Preferences
+- Functional components with TypeScript interfaces
+- Explicit return types on functions
+- Early returns for conditional logic
+- Destructured props
+- Tailwind CSS for styling (no CSS files)
+- Comments for complex logic only
+
+### Component Structure
+- Component exports at the top of the file
+- Props interface defined before the component
+- Helper functions after the component
+- Types at the end of the file
+
+## User Preferences
+
+### Documentation
+- README should be comprehensive and include badges
+- Code should be self-documenting with minimal comments
+- Complex logic should have explanatory comments
+- TypeScript interfaces should be well-documented
+
+### UI/UX
+- Mobile-first responsive design
+- Consistent color scheme using Tailwind classes
+- Accessible components with proper ARIA attributes
+- Interactive elements should have hover/focus states
+- Loading states for async operations
+
+## Critical Implementation Paths
+
+### Data Flow
+1. Data is fetched from JSON files (future: API)
+2. React Query manages caching and refetching
+3. Components consume data via custom hooks
+4. UI renders based on the data state (loading/error/success)
+
+### Visualization Rendering
+1. Raw data is transformed into visualization-ready format
+2. D3.js or Recharts renders the visualization
+3. Interactive elements update the visualization state
+4. State changes trigger re-renders with optimized performance
+
+## Known Challenges
+
+### Performance Optimization
+- Large datasets may cause rendering performance issues
+- Solution: Implement virtualization for long lists
+- Solution: Use memoization for expensive calculations
+- Solution: Optimize bundle size with code splitting
+
+### Browser Compatibility
+- Some visualizations may have issues in older browsers
+- Solution: Use feature detection and provide fallbacks
+- Solution: Test across multiple browsers and devices
+
+### Mobile Experience
+- Complex visualizations are challenging on small screens
+- Solution: Simplified views for mobile devices
+- Solution: Alternative layouts for critical information
+
+## Tool Usage Patterns
+
+### Development Workflow
+- Use `npm run dev` for local development
+- Check console for errors and warnings
+- Use browser dev tools for component inspection
+- Test responsive design with device emulation
+
+### Build and Deployment
+- Use `npm run build` for production builds
+- Verify bundle size and performance metrics
+- Test the production build locally before deployment
+
+## Evolution of Project Decisions
+
+### Initial Decisions
+- Use Vite instead of Create React App for better performance
+- Use Tailwind CSS for rapid UI development
+- Use shadcn/ui for accessible component foundation
+- Use React Query for data fetching and caching
+
+### Refinements
+- Added memory bank for comprehensive documentation
+- Integrated official logo into documentation
+- Structured project for scalability and maintainability
+
+## Project-Specific Shortcuts
+
+### Development Commands
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run format` - Run Prettier
+
+### Key Files
+- `client/src/App.tsx` - Main application component
+- `client/src/main.tsx` - Application entry point
+- `server/index.ts` - Server entry point
+- `shared/schema.ts` - Shared data schemas

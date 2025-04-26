@@ -172,8 +172,8 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
     // Clear previous chart
     d3.select(svgRef.current).selectAll('*').remove();
     
-    // Adjust margins and sizing
-    const margin = { top: 70, right: 50, bottom: 70, left: 150 };
+    // Adjust margins and sizing - increase top margin to prevent overlap with title
+    const margin = { top: 100, right: 50, bottom: 70, left: 150 };
     const width = containerRef.current?.clientWidth || 800;
     const baseWidth = Math.max(width, 800);
     const adjustedWidth = baseWidth * (zoomLevel / 100);
@@ -251,7 +251,7 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .attr('stroke', '#eaeaea')
         .attr('stroke-width', 1);
         
-      // Add X axis labels (modalities) with rotation for better readability
+      // Add X axis labels (modalities) with improved spacing and readability
       svg.append('g')
         .attr('class', 'x-axis')
         .selectAll('text')
@@ -259,20 +259,20 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         .enter()
         .append('text')
         .attr('x', d => (xScale(d) || 0) + xScale.bandwidth() / 2)
-        .attr('y', -8)
-        .attr('transform', d => `rotate(-30, ${(xScale(d) || 0) + xScale.bandwidth() / 2}, -8)`)
+        .attr('y', -15) // Moved further up to avoid overlap
+        .attr('transform', d => `rotate(-45, ${(xScale(d) || 0) + xScale.bandwidth() / 2}, -15)`) // Increased rotation angle
         .attr('text-anchor', 'end')
-        .style('font-size', '11px')
+        .style('font-size', '12px') // Slightly larger font
         .style('font-weight', 'medium')
         .style('fill', d => highlightedModalities.includes(d) ? '#A92269' : '#52606D')
         .style('cursor', 'pointer')
         .text(d => d)
         .on('click', (_, d) => toggleModalityHighlight(d));
       
-      // Add modality header
+      // Add modality header - positioned higher to avoid overlap
       svg.append('text')
         .attr('x', (cellSize * filteredModalities.length) / 2)
-        .attr('y', -40)
+        .attr('y', -60) // Moved higher up
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('font-weight', 'medium')
@@ -948,72 +948,13 @@ export default function Heatmap({ data, indications, modalities, title, onCellCl
         metricType === 'value' ? 'Total Value ($M)' : 'YoY Growth'})`)
       .append('tspan')
       .attr('x', (cellSize * filteredModalities.length) / 2)
-      .attr('dy', 20)
+      .attr('y', -35) // Repositioned to avoid overlap
       .style('font-size', '12px')
       .style('font-weight', 'normal')
       .style('fill', '#616E7C')
       .text(`Showing ${filteredData.filter(d => d.count > 0).length} active combinations`);
     
-    // Add Legend for heatmap
-    if (viewMode === 'heatmap') {
-      const legendWidth = 200;
-      const legendHeight = 15;
-      
-      const legend = svg.append('g')
-        .attr('transform', `translate(${(cellSize * filteredModalities.length - legendWidth) / 2}, ${-25})`);
-        
-      // Create gradient for legend
-      const defs = svg.append('defs');
-      const linearGradient = defs.append('linearGradient')
-        .attr('id', 'heatmap-gradient')
-        .attr('x1', '0%')
-        .attr('x2', '100%')
-        .attr('y1', '0%')
-        .attr('y2', '0%');
-        
-      // The color gradient stops depend on the selected color scheme
-      const colorInterpolator = getColorInterpolator();
-      const stops = [0, 0.2, 0.4, 0.6, 0.8, 1];
-      
-      linearGradient.selectAll('stop')
-        .data(stops)
-        .enter()
-        .append('stop')
-        .attr('offset', d => `${d * 100}%`)
-        .attr('stop-color', d => colorInterpolator(d));
-        
-      // Draw legend rectangle
-      legend.append('rect')
-        .attr('width', legendWidth)
-        .attr('height', legendHeight)
-        .style('fill', 'url(#heatmap-gradient)')
-        .attr('rx', 3)
-        .attr('ry', 3);
-        
-      // Add legend labels
-      legend.append('text')
-        .attr('x', 0)
-        .attr('y', legendHeight + 15)
-        .style('font-size', '10px')
-        .style('fill', '#616E7C')
-        .text('0');
-        
-      legend.append('text')
-        .attr('x', legendWidth / 2)
-        .attr('y', legendHeight + 15)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '10px')
-        .style('fill', '#616E7C')
-        .text(normalized ? '50%' : `${Math.floor(maxValue / 2)}`);
-        
-      legend.append('text')
-        .attr('x', legendWidth)
-        .attr('y', legendHeight + 15)
-        .attr('text-anchor', 'end')
-        .style('font-size', '10px')
-        .style('fill', '#616E7C')
-        .text(normalized ? '100%' : `${maxValue}`);
-    }
+    // Removed redundant top legend - keeping only the right side legend
     
   }, [
     filteredData, filteredIndications, filteredModalities, 
